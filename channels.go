@@ -10,13 +10,12 @@ import (
 	"os"
 	"runtime"
 	"strconv"
-	"time"
 )
 
-const NumberOfMessages=3
+const NumberOfMessages = 3
 
-func LogMessagesToFile(fileName string, message string){
-	f, err := os.OpenFile(fileName, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+func LogMessagesToFile(fileName string, message string) {
+	f, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
@@ -40,7 +39,6 @@ func bToMb(b uint64) uint64 {
 	return b / 1024 / 1024
 }
 
-
 // Here's the worker goroutine. It repeatedly receives
 // from `jobs` with `j, more := <-jobs`. In this
 // special 2-value form of receive, the `more` value
@@ -48,13 +46,13 @@ func bToMb(b uint64) uint64 {
 // values in the channel have already been received.
 // We use this to notify on `done` when we've worked
 // all our jobs.
-func Receive (jobs chan int) {
+func Receive(jobs chan int) {
 	for {
 		select {
 		case j, more := <-jobs:
 			if more {
 				//fmt.Println("received job", j)
-				LogMessagesToFile("testLogs", "received job" + strconv.Itoa(j))
+				LogMessagesToFile("testLogs", "received job"+strconv.Itoa(j))
 			} else {
 				fmt.Println("received all jobs")
 				return
@@ -63,26 +61,24 @@ func Receive (jobs chan int) {
 	}
 }
 
-
 // This sends 3 jobs to the worker over the `jobs`
 // channel, then closes it.
-func Send (jobs chan int){
+func Send(jobs chan int) {
 	for j := 1; j <= NumberOfMessages; j++ {
 		jobs <- j
 		//fmt.Println("sent job", j)
-		LogMessagesToFile("testLogs", "sent job" + strconv.Itoa(j))
+		LogMessagesToFile("testLogs", "sent job"+strconv.Itoa(j))
 	}
 	close(jobs)
+	runtime.GC()
 	fmt.Println("sent all jobs")
 }
 
-func Serve(){
+func Serve() {
 	jobs := make(chan int)
-	//done := make(chan bool)
 	go Receive(jobs)
 	go Send(jobs)
 }
-
 
 // In this example we'll use a `jobs` channel to
 // communicate work to be done from the `main()` goroutine
@@ -91,7 +87,7 @@ func Serve(){
 func main() {
 	for {
 		Serve()
-		time.Sleep(2*time.Second)
+		//time.Sleep(2*time.Second)
 		PrintMemUsage()
 	}
 }

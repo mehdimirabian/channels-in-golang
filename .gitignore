@@ -1,3 +1,4 @@
  vendor/
  pkg/
  .idea/
+ testLogs
